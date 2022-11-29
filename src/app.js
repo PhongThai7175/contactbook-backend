@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const contactController = require('./controllers/contact.controller');
+const ApiError = require('./api-error');
+
 
 const app = express();
 
@@ -20,11 +22,30 @@ app.route('/api/contacts')
 .post(contactController.create)
 .delete(contactController.deleteAll);
 
+
 app.route('/api/contacts/favorite').get(contactController.findAllFavorite);
 
 app.route('/api/contacts/:id(\\d+)')
 .get(contactController.findOne)
 .put(contactController.update)
 .delete(contactController.delete);
+
+app.route('/api/contacts/:id')
+.get(contactController.findOne)
+.put(contactController.update)
+.delete(contactController.delete);
+
+// Handle 404 response.
+app.use((req, res, next) => {
+
+    return next(new ApiError(404, 'Resource not found'));
+    });
+
+    app.use((error, req, res, next) => {
+  
+    return res.status(error.statusCode || 500).json({
+    message: error.message || 'Internal Server Error',
+    });
+    });
 
 module.exports = app;
